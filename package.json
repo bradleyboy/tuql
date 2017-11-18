@@ -1,0 +1,35 @@
+{
+  "name": "tuql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": {
+    "tuql": "dist/bin/index.js"
+  },
+  "scripts": {
+    "start": "babel-node src/index.js",
+    "build": "babel src --out-dir dist",
+    "prepublish": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brad Daily <brad.daily@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "command-line-args": "^4.0.7",
+    "cors": "^2.8.4",
+    "express": "^4.16.2",
+    "express-graphql": "^0.6.11",
+    "graphql": "^0.11.7",
+    "graphql-relay": "^0.5.3",
+    "graphql-sequelize": "^5.6.0",
+    "pluralize": "^7.0.0",
+    "sequelize": "^4.22.7",
+    "sqlite3": "^3.1.13"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.32",
+    "@babel/core": "^7.0.0-beta.32",
+    "@babel/node": "^7.0.0-beta.32",
+    "@babel/preset-env": "^7.0.0-beta.32"
+  }
+}
