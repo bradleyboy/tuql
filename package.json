@@ -14,6 +14,7 @@
   },
   "author": "Brad Daily <brad.daily@gmail.com>",
   "license": "MIT",
+  "keywords": ["graphql", "sqlite"],
   "dependencies": {
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
