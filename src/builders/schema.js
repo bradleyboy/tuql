@@ -58,18 +58,18 @@ const build = db => {
     for (let table of tables) {
       const [info, _] = await db.query(`PRAGMA table_info(${table})`);
 
-      models[table] = db.define(table, createDefinitions(info, table), {
-        timestamps: false,
-        tableName: table,
-      });
-
       if (table.indexOf('_') !== -1) {
         polyAssociations.push({
-          through: models[table],
+          through: table,
           sides: table.split('_').map(plural),
           keys: info.map(column => column.name),
         });
       } else {
+        models[table] = db.define(table, createDefinitions(info, table), {
+          timestamps: false,
+          tableName: table,
+        });
+
         associations = associations.concat(
           info
             .filter(column => {
