@@ -20,12 +20,12 @@ You can also optionally set the port and enable graphiql:
 
 Imagine your sqlite schema looked something like this:
 
-| posts   | users    | categories | category_post |
-| ------- | -------- | ---------- | ------------- |
-| id      | id       | id         | category_id   | 
-| user_id | username | title      | post_id       |
-| title   |          |            |
-| body    |          |            |
+| posts | users | categories | category_post |
+| :-: | :-: | :-: | :-: |
+| id      | id | id | category_id | 
+| user_id | username | title | post_id |
+| title   | | |
+| body    | | |
 
 **tuql** will automatically define models and associations, so that graphql queries like this will work right out of the box:
 
