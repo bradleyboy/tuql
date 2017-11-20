@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import fs from 'fs';
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import cors from 'cors';
@@ -19,7 +20,7 @@ const app = express();
 console.log('');
 console.log(` > Reading schema from ${options.db}`);
 
-buildSchema(options.db).then(schema => {
+buildSchema(fs.realpathSync(options.db)).then(schema => {
   app.use(
     '/graphql',
     cors(),
