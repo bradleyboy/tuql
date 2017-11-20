@@ -1,6 +1,6 @@
 {
   "name": "tuql",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -14,7 +14,10 @@
   },
   "author": "Brad Daily <brad.daily@gmail.com>",
   "license": "MIT",
-  "keywords": ["graphql", "sqlite"],
+  "keywords": [
+    "graphql",
+    "sqlite"
+  ],
   "dependencies": {
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
