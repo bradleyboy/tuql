@@ -16,13 +16,17 @@ You can also optionally set the port and enable graphiql:
 
 `tuql --db path/to/database.sqlite --port 8888 --graphiql`
 
+Or, you can use a sql file with statements to build up an in-memory database:
+
+`tuql --infile path/to/db_dump.sql --graphiql`
+
 ## How it works
 
 Imagine your sqlite schema looked something like this:
 
 | posts | users | categories | category_post |
 | :-: | :-: | :-: | :-: |
-| id      | id | id | category_id | 
+| id      | id | id | category_id |
 | user_id | username | title | post_id |
 | title   | | |
 | body    | | |

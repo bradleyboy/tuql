@@ -7,7 +7,20 @@ import cors from 'cors';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
-import buildSchema from '../builders/schema';
+import {
+  buildSchemaFromDatabase,
+  buildSchemaFromInfile,
+} from '../builders/schema';
+
+const FilePath = path => {
+  if (!fs.existsSync(path)) {
+    console.log('');
+    console.error(` > File does not exist: ${path}`);
+    process.exit();
+  }
+
+  return fs.realpathSync(path);
+};
 
 const optionDefinitions = [
   {
@@ -18,10 +31,15 @@ const optionDefinitions = [
   },
   {
     name: 'db',
-    type: String,
+    type: FilePath,
     defaultValue: 'database.sqlite',
     description:
       'Path to the sqlite database you want to create a graphql endpoint for',
+  },
+  {
+    name: 'infile',
+    type: FilePath,
+    description: 'Path to a sql file to bootstrap an in-memory database with',
   },
   {
     name: 'port',
@@ -60,10 +78,18 @@ if (options.help) {
 
 const app = express();
 
-console.log('');
-console.log(` > Reading schema from ${options.db}`);
+const promise = options.infile
+  ? buildSchemaFromInfile(options.infile)
+  : buildSchemaFromDatabase(options.db);
 
-buildSchema(fs.realpathSync(options.db)).then(schema => {
+const message = options.infile
+  ? `Creating in-memory database with ${options.infile}`
+  : `Reading schema from ${options.db}`;
+
+console.log('');
+console.log(` > ${message}`);
+
+promise.then(schema => {
   app.use(
     '/graphql',
     cors(),

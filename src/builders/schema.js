@@ -1,20 +1,51 @@
+import fs from 'fs';
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
 import { resolver, attributeFields, defaultListArgs } from 'graphql-sequelize';
 import { plural, singular } from 'pluralize';
 import Sequelize from 'sequelize';
 
 import createDefinitions from './definitions';
+import { posix } from 'path';
 
 const FK_SUFFIX_REGEX = /(_id|Id)$/;
 
-export default databaseFile => {
-  const db = new Sequelize({
-    dialect: 'sqlite',
-    storage: databaseFile,
-    logging: false,
-    operatorsAliases: Sequelize.Op,
-  });
+export const buildSchemaFromDatabase = databaseFile => {
+  return new Promise(async (resolve, reject) => {
+    const db = new Sequelize({
+      dialect: 'sqlite',
+      storage: databaseFile,
+      logging: false,
+      operatorsAliases: Sequelize.Op,
+    });
 
+    resolve(await build(db));
+  });
+};
+
+export const buildSchemaFromInfile = infile => {
+  return new Promise(async (resolve, reject) => {
+    const db = new Sequelize({
+      dialect: 'sqlite',
+      storage: ':memory:',
+      logging: false,
+      operatorsAliases: Sequelize.Op,
+    });
+
+    const contents = fs.readFileSync(infile);
+    const statements = contents
+      .toString()
+      .split(/\r?\n|\r/g)
+      .filter(s => s.length);
+
+    for (let stmt of statements) {
+      await db.query(stmt);
+    }
+
+    resolve(await build(db));
+  });
+};
+
+const build = db => {
   return new Promise(async (resolve, reject) => {
     const models = {};
     let associations = [];
