@@ -10,7 +10,8 @@
     "start": "babel-node src/index.js",
     "build": "babel src --out-dir dist",
     "prepublish": "npm run build",
-    "test": "jest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "author": "Brad Daily <brad.daily@gmail.com>",
   "license": "MIT",
