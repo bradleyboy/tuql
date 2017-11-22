@@ -5,4 +5,4 @@ node_js:
 
 sudo: false
 
-script: npm test:ci
+script: npm run test:ci
