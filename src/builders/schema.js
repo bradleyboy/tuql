@@ -2,11 +2,11 @@ import fs from 'fs';
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
 import { resolver, attributeFields, defaultListArgs } from 'graphql-sequelize';
 import { plural, singular } from 'pluralize';
-import Sequelize from 'sequelize';
+import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
-
-const FK_SUFFIX_REGEX = /(_id|Id)$/;
+import { isJoinTable } from '../checks';
+import { joinTableAssociations, tableAssociations } from './associations';
 
 export const buildSchemaFromDatabase = databaseFile => {
   return new Promise(async (resolve, reject) => {
@@ -47,72 +47,29 @@ export const buildSchemaFromInfile = infile => {
 const build = db => {
   return new Promise(async (resolve, reject) => {
     const models = {};
-    const associations = [];
+    let associations = [];
 
     const tables = await db.query(
-      'SELECT name FROM sqlite_master WHERE type = "table"'
+      'SELECT name FROM sqlite_master WHERE type = "table" AND name NOT LIKE "sqlite_%"'
     );
 
     for (let table of tables) {
-      const [info, _] = await db.query(`PRAGMA table_info(${table})`);
+      const [info, infoMeta] = await db.query(`PRAGMA table_info(${table})`);
+      const foreignKeys = await db.query(`PRAGMA foreign_key_list(${table})`);
 
-      // TODO: if has _, check to see if both sides match a table, then add polys
-      if (table.indexOf('_') !== -1) {
-        const [a, b] = table.split('_').map(plural);
-        const keys = info.map(column => column.name);
-        const [aKey] = keys.filter(key => key.indexOf(singular(a)) === 0);
-        const [bKey] = keys.filter(key => key.indexOf(singular(b)) === 0);
-
-        associations.push({
-          from: a,
-          to: b,
-          type: 'belongsToMany',
-          options: {
-            through: table,
-            foreignKey: aKey,
-          },
-        });
-
-        associations.push({
-          from: b,
-          to: a,
-          type: 'belongsToMany',
-          options: {
-            through: table,
-            foreignKey: bKey,
-          },
-        });
+      if (isJoinTable(table, tables)) {
+        associations = associations.concat(
+          joinTableAssociations(table, info, foreignKeys)
+        );
       } else {
         models[table] = db.define(table, createDefinitions(info, table), {
           timestamps: false,
           tableName: table,
         });
 
-        info
-          .filter(column => {
-            return FK_SUFFIX_REGEX.test(column.name);
-          })
-          .forEach(column => {
-            const root = column.name.replace(FK_SUFFIX_REGEX, '');
-
-            associations.push({
-              from: plural(root),
-              to: table,
-              type: 'hasMany',
-              options: {
-                foreignKey: column.name,
-              },
-            });
-
-            associations.push({
-              from: table,
-              to: plural(root),
-              type: 'belongsTo',
-              options: {
-                foreignKey: column.name,
-              },
-            });
-          });
+        associations = associations.concat(
+          tableAssociations(table, info, foreignKeys)
+        );
       }
     }
 
