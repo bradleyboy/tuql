@@ -10,14 +10,11 @@
     "start": "babel-node src/index.js",
     "build": "babel src --out-dir dist",
     "prepublish": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watch"
   },
   "author": "Brad Daily <brad.daily@gmail.com>",
   "license": "MIT",
-  "keywords": [
-    "graphql",
-    "sqlite"
-  ],
+  "keywords": ["graphql", "sqlite"],
   "dependencies": {
     "camelcase": "^4.1.0",
     "command-line-args": "^4.0.7",
@@ -36,6 +33,15 @@
     "@babel/cli": "^7.0.0-beta.32",
     "@babel/core": "^7.0.0-beta.32",
     "@babel/node": "^7.0.0-beta.32",
-    "@babel/preset-env": "^7.0.0-beta.32"
+    "@babel/preset-env": "^7.0.0-beta.32",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^21.2.0",
+    "jest": "^21.2.1",
+    "regenerator-runtime": "^0.11.0"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": ["text"],
+    "collectCoverageFrom": ["src/**/*.js", "!src/__tests__/*"]
   }
 }
