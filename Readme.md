@@ -1,4 +1,4 @@
-# tuql ![build status](https://travis-ci.org/bradleyboy/tuql.svg?branch=master)
+# tuql ![build status](https://travis-ci.org/bradleyboy/tuql.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/bradleyboy/tuql/badge.svg?branch=master)](https://coveralls.io/github/bradleyboy/tuql?branch=master)
 
 _Pronounced: Too cool_ 
 
