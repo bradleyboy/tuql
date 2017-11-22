@@ -1,4 +1,5 @@
 import { plural, singular } from 'pluralize';
+import { formatFieldName } from '../utils';
 
 const FK_SUFFIX_REGEX = /(_id|Id)$/;
 
@@ -53,7 +54,7 @@ export const tableAssociations = (table, info, foreignKeys) => {
       to: table,
       type: 'hasMany',
       options: {
-        foreignKey: from,
+        foreignKey: formatFieldName(from),
       },
     });
 
@@ -62,7 +63,7 @@ export const tableAssociations = (table, info, foreignKeys) => {
       to: otherTable,
       type: 'belongsTo',
       options: {
-        foreignKey: from,
+        foreignKey: formatFieldName(from),
       },
     });
   });

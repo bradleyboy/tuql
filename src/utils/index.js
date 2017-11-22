@@ -1,4 +1,5 @@
 import { plural, singular } from 'pluralize';
+import camelcase from 'camelcase';
 
 export const isJoinTable = (tableName, tableList) => {
   const sides = tableName.split('_').map(plural);
@@ -31,3 +32,5 @@ export const findModelKey = (key, models) => {
 
   throw Error(`Model with ${key} does not exist`);
 };
+
+export const formatFieldName = camelcase;

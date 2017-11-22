@@ -19,6 +19,7 @@
     "sqlite"
   ],
   "dependencies": {
+    "camelcase": "^4.1.0",
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
     "cors": "^2.8.4",

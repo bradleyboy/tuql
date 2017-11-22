@@ -1,5 +1,6 @@
 import { TEXT, INTEGER, REAL, NUMERIC, BLOB } from 'sequelize';
 import { singular } from 'pluralize';
+import { formatFieldName } from '../utils';
 
 const transformColumnToType = column => {
   const c = column.toLowerCase();
@@ -31,9 +32,10 @@ const transformColumnToType = column => {
 
 export default (columns, tableName) => {
   return columns.reduce((acc, column) => {
-    acc[column.name] = {
+    acc[formatFieldName(column.name)] = {
       type: transformColumnToType(column.type),
       primaryKey: column.pk === 1,
+      field: column.name,
     };
 
     return acc;

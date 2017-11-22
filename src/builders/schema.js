@@ -7,6 +7,7 @@ import Sequelize, { QueryTypes } from 'sequelize';
 import createDefinitions from './definitions';
 import { isJoinTable, findModelKey } from '../utils';
 import { joinTableAssociations, tableAssociations } from './associations';
+import { formatFieldName } from '../utils/index';
 
 export const buildSchemaFromDatabase = databaseFile => {
   return new Promise(async (resolve, reject) => {
@@ -105,7 +106,7 @@ const build = db => {
           const fields = attributeFields(model);
 
           fieldAssociations.hasMany.forEach(associatedModel => {
-            fields[associatedModel.name] = {
+            fields[formatFieldName(associatedModel.name)] = {
               type: new GraphQLList(types[associatedModel.name]),
               args: defaultListArgs(model[associatedModel.name]),
               resolve: resolver(model[associatedModel.name]),
@@ -114,15 +115,15 @@ const build = db => {
 
           fieldAssociations.belongsTo.forEach(associatedModel => {
             const fieldName = singular(associatedModel.name);
-            fields[fieldName] = {
+            fields[formatFieldName(fieldName)] = {
               type: types[associatedModel.name],
               resolve: resolver(model[fieldName]),
             };
           });
 
           fieldAssociations.belongsToMany.forEach(sides => {
-            const other = sides.filter(side => side !== model.name);
-            fields[other] = {
+            const [other] = sides.filter(side => side !== model.name);
+            fields[formatFieldName(other)] = {
               type: new GraphQLList(types[other]),
               resolve: resolver(model[other]),
             };
@@ -134,7 +135,7 @@ const build = db => {
 
       types[key] = type;
 
-      acc[key] = {
+      acc[formatFieldName(key)] = {
         type: new GraphQLList(type),
         args: defaultListArgs(model),
         resolve: resolver(model),
