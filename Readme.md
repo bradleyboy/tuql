@@ -48,7 +48,7 @@ Imagine your sqlite schema looked something like this:
 }
 ```
 
-**tuql** assumes the following about your schema:
+**tuql** works one of two ways. It prefers to map your schema based on the your foreign key information in your tables. If foreign keys are not present, **tuql** assumes the following about your schema in order to map relationships:
 
 1. The primary key column is named `id` or `thing_id` or `thingId`, where `thing` is the singular form of the table name. Example: For a table named **posts**, the primary key column should be named `id`, `post_id` or `postId`.
 2. Similarly, foreign key columns should be `thing_id` or `thingId`, where `thing` is the singular form of the associated table.
