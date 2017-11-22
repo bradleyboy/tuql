@@ -2,3 +2,4 @@ node_modules
 database.sqlite
 test.sql
 dist
+coverage
