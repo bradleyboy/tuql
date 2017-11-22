@@ -5,7 +5,7 @@ import { plural, singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
-import { isJoinTable } from '../checks';
+import { isJoinTable, findModelKey } from '../utils';
 import { joinTableAssociations, tableAssociations } from './associations';
 
 export const buildSchemaFromDatabase = databaseFile => {
@@ -54,8 +54,8 @@ const build = db => {
     );
 
     for (let table of tables) {
-      const [info, infoMeta] = await db.query(`PRAGMA table_info(${table})`);
-      const foreignKeys = await db.query(`PRAGMA foreign_key_list(${table})`);
+      const [info, infoMeta] = await db.query(`PRAGMA table_info("${table}")`);
+      const foreignKeys = await db.query(`PRAGMA foreign_key_list("${table}")`);
 
       if (isJoinTable(table, tables)) {
         associations = associations.concat(
@@ -75,7 +75,9 @@ const build = db => {
 
     associations.forEach(({ from, to, type, options }) => {
       const key = type === 'belongsTo' ? singular(to) : to;
-      models[from][key] = models[from][type](models[to], options);
+      const fromKey = findModelKey(from, models);
+      const toKey = findModelKey(to, models);
+      models[fromKey][key] = models[fromKey][type](models[toKey], options);
     });
 
     const types = {};
@@ -105,6 +107,7 @@ const build = db => {
           fieldAssociations.hasMany.forEach(associatedModel => {
             fields[associatedModel.name] = {
               type: new GraphQLList(types[associatedModel.name]),
+              args: defaultListArgs(model[associatedModel.name]),
               resolve: resolver(model[associatedModel.name]),
             };
           });
