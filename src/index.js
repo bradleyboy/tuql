@@ -1,3 +1,6 @@
-import buildSchema from './builders/schema';
+import {
+  buildSchemaFromDatabase,
+  buildSchemaFromInfile,
+} from './builders/schema';
 
-export { buildSchema };
+export { buildSchemaFromDatabase, buildSchemaFromInfile };
