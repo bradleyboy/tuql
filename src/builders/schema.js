@@ -2,12 +2,11 @@ import fs from 'fs';
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
 import { resolver, attributeFields, defaultListArgs } from 'graphql-sequelize';
 import { plural, singular } from 'pluralize';
-import Sequelize from 'sequelize';
+import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
-import { posix } from 'path';
-
-const FK_SUFFIX_REGEX = /(_id|Id)$/;
+import { isJoinTable } from '../checks';
+import { joinTableAssociations, tableAssociations } from './associations';
 
 export const buildSchemaFromDatabase = databaseFile => {
   return new Promise(async (resolve, reject) => {
@@ -49,21 +48,19 @@ const build = db => {
   return new Promise(async (resolve, reject) => {
     const models = {};
     let associations = [];
-    let polyAssociations = [];
 
     const tables = await db.query(
-      'SELECT name FROM sqlite_master WHERE type = "table"'
+      'SELECT name FROM sqlite_master WHERE type = "table" AND name NOT LIKE "sqlite_%"'
     );
 
     for (let table of tables) {
-      const [info, _] = await db.query(`PRAGMA table_info(${table})`);
+      const [info, infoMeta] = await db.query(`PRAGMA table_info(${table})`);
+      const foreignKeys = await db.query(`PRAGMA foreign_key_list(${table})`);
 
-      if (table.indexOf('_') !== -1) {
-        polyAssociations.push({
-          through: table,
-          sides: table.split('_').map(plural),
-          keys: info.map(column => column.name),
-        });
+      if (isJoinTable(table, tables)) {
+        associations = associations.concat(
+          joinTableAssociations(table, info, foreignKeys)
+        );
       } else {
         models[table] = db.define(table, createDefinitions(info, table), {
           timestamps: false,
@@ -71,48 +68,14 @@ const build = db => {
         });
 
         associations = associations.concat(
-          info
-            .filter(column => {
-              return FK_SUFFIX_REGEX.test(column.name);
-            })
-            .map(column => {
-              const root = column.name.replace(FK_SUFFIX_REGEX, '');
-
-              return {
-                column: column.name,
-                owner: plural(root),
-                target: table,
-              };
-            })
+          tableAssociations(table, info, foreignKeys)
         );
       }
     }
 
-    polyAssociations.forEach(({ through, sides, keys }) => {
-      const [a, b] = sides;
-      const [aKey] = keys.filter(key => key.indexOf(singular(a)) === 0);
-      const [bKey] = keys.filter(key => key.indexOf(singular(b)) === 0);
-
-      models[a][b] = models[a].belongsToMany(models[b], {
-        through,
-        foreignKey: aKey,
-      });
-
-      models[b][a] = models[b].belongsToMany(models[a], {
-        through,
-        foreignKey: bKey,
-      });
-    });
-
-    associations.forEach(({ owner, target, column }) => {
-      models[owner][target] = models[owner].hasMany(models[target], {
-        foreignKey: column,
-      });
-
-      models[target][singular(owner)] = models[target].belongsTo(
-        models[owner],
-        { foreignKey: column }
-      );
+    associations.forEach(({ from, to, type, options }) => {
+      const key = type === 'belongsTo' ? singular(to) : to;
+      models[from][key] = models[from][type](models[to], options);
     });
 
     const types = {};
@@ -121,14 +84,17 @@ const build = db => {
       const model = models[key];
       const fieldAssociations = {
         hasMany: associations
-          .filter(({ owner }) => owner === key)
-          .map(({ target }) => models[target]),
+          .filter(({ type }) => type === 'hasMany')
+          .filter(({ from }) => from === key)
+          .map(({ to }) => models[to]),
         belongsTo: associations
-          .filter(({ target }) => target === key)
-          .map(({ owner }) => models[owner]),
-        belongsToMany: polyAssociations
-          .filter(({ sides }) => sides.includes(key))
-          .map(({ sides }) => sides),
+          .filter(({ type }) => type === 'belongsTo')
+          .filter(({ from }) => from === key)
+          .map(({ to }) => models[to]),
+        belongsToMany: associations
+          .filter(({ type }) => type === 'belongsToMany')
+          .map(({ from, to }) => [from, to])
+          .filter(sides => sides.includes(key)),
       };
 
       const type = new GraphQLObjectType({

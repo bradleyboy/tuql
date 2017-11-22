@@ -18,7 +18,7 @@ const transformColumnToType = column => {
 
   if (
     c.includes('decimal') ||
-    c === 'numeric' ||
+    c.includes('numeric') ||
     c === 'boolean' ||
     c === 'date' ||
     c === 'datetime'
@@ -30,13 +30,10 @@ const transformColumnToType = column => {
 };
 
 export default (columns, tableName) => {
-  const root = singular(tableName);
-  const pkTest = new RegExp(`^${root}(Id|_id)$`);
-
   return columns.reduce((acc, column) => {
     acc[column.name] = {
       type: transformColumnToType(column.type),
-      primaryKey: column.name === 'id' || pkTest.test(column.name),
+      primaryKey: column.pk === 1,
     };
 
     return acc;
