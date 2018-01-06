@@ -1,6 +1,11 @@
 import fs from 'fs';
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
-import { resolver, attributeFields, defaultListArgs } from 'graphql-sequelize';
+import {
+  resolver,
+  attributeFields,
+  defaultListArgs,
+  defaultArgs,
+} from 'graphql-sequelize';
 import { plural, singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
@@ -142,6 +147,12 @@ const build = db => {
       acc[formatFieldName(key)] = {
         type: new GraphQLList(type),
         args: defaultListArgs(model),
+        resolve: resolver(model),
+      };
+
+      acc[singular(formatFieldName(key))] = {
+        type,
+        args: defaultArgs(model),
         resolve: resolver(model),
       };
 
