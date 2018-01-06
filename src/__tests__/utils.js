@@ -1,7 +1,7 @@
 import { TEXT, INTEGER } from 'sequelize';
 
 import definitions from '../builders/definitions';
-import { isJoinTable, findModelKey } from '../utils/index';
+import { isJoinTable, findModelKey, formatTypeName } from '../utils/index';
 
 describe('definitions', () => {
   it('detects join tables', () => {
@@ -20,5 +20,15 @@ describe('definitions', () => {
     expect(() => {
       findModelKey('foo', { posts: 1 });
     }).toThrow('Model with foo does not exist');
+  });
+});
+
+describe('formatting', () => {
+  it('formats a type name', () => {
+    expect(formatTypeName('posts')).toEqual('Post');
+  });
+
+  it('formats a type name with more complexity', () => {
+    expect(formatTypeName('post_author')).toEqual('PostAuthor');
   });
 });

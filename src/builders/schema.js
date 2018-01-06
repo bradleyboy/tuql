@@ -5,9 +5,13 @@ import { plural, singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
-import { isJoinTable, findModelKey } from '../utils';
+import {
+  isJoinTable,
+  findModelKey,
+  formatFieldName,
+  formatTypeName,
+} from '../utils';
 import { joinTableAssociations, tableAssociations } from './associations';
-import { formatFieldName } from '../utils/index';
 
 export const buildSchemaFromDatabase = databaseFile => {
   return new Promise(async (resolve, reject) => {
@@ -101,7 +105,7 @@ const build = db => {
       };
 
       const type = new GraphQLObjectType({
-        name: model.name,
+        name: formatTypeName(model.name),
         fields() {
           const fields = attributeFields(model);
 

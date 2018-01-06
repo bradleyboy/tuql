@@ -13,6 +13,15 @@ export const isJoinTable = (tableName, tableList) => {
   return tableList.includes(one) && tableList.includes(two);
 };
 
+export const formatTypeName = name => {
+  return pascalCase(singular(name));
+};
+
+const pascalCase = string => {
+  const cameled = camelcase(string);
+  return cameled.substr(0, 1).toUpperCase() + cameled.substr(1);
+};
+
 export const findModelKey = (key, models) => {
   if (models[key]) {
     return key;
