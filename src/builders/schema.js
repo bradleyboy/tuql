@@ -145,7 +145,7 @@ const build = db => {
     }, {});
 
     const query = new GraphQLObjectType({
-      name: 'RootQueryType',
+      name: 'Query',
       fields,
     });
 
