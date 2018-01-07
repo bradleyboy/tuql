@@ -6,6 +6,7 @@ import graphqlHTTP from 'express-graphql';
 import cors from 'cors';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
+import { printSchema } from 'graphql';
 
 import {
   buildSchemaFromDatabase,
@@ -48,6 +49,12 @@ const optionDefinitions = [
     defaultValue: 4000,
     description: 'Port to run on (Default: 4000)',
   },
+  {
+    name: 'schema',
+    alias: 's',
+    type: Boolean,
+    description: 'Write string representation of schema to stdout',
+  },
   { name: 'help', alias: 'h', type: Boolean, description: 'This help output' },
 ];
 
@@ -82,24 +89,28 @@ const promise = options.infile
   ? buildSchemaFromInfile(options.infile)
   : buildSchemaFromDatabase(options.db);
 
-const message = options.infile
-  ? `Creating in-memory database with ${options.infile}`
-  : `Reading schema from ${options.db}`;
+if (options.schema) {
+  promise.then(schema => console.log(printSchema(schema)));
+} else {
+  const message = options.infile
+    ? `Creating in-memory database with ${options.infile}`
+    : `Reading schema from ${options.db}`;
 
-console.log('');
-console.log(` > ${message}`);
+  console.log('');
+  console.log(` > ${message}`);
 
-promise.then(schema => {
-  app.use(
-    '/graphql',
-    cors(),
-    graphqlHTTP({
-      schema,
-      graphiql: options.graphiql,
-    })
-  );
+  promise.then(schema => {
+    app.use(
+      '/graphql',
+      cors(),
+      graphqlHTTP({
+        schema,
+        graphiql: options.graphiql,
+      })
+    );
 
-  app.listen(options.port, () =>
-    console.log(` > Running at http://localhost:${options.port}/graphql`)
-  );
-});
+    app.listen(options.port, () =>
+      console.log(` > Running at http://localhost:${options.port}/graphql`)
+    );
+  });
+}
