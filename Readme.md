@@ -1,6 +1,6 @@
 # tuql ![build status](https://travis-ci.org/bradleyboy/tuql.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/bradleyboy/tuql/badge.svg?branch=master)](https://coveralls.io/github/bradleyboy/tuql?branch=master)
 
-_Pronounced: Too cool_ 
+_Pronounced: Too cool_
 
 **tuql** is a simple tool that turns a sanely formatted sqlite database into a graphql endpoint. It tries to infer relationships between objects, currently supporting `belongsTo`, `hasMany` and `belongsToMany`. Currently, only read operations are supported (no mutations).
 
@@ -19,6 +19,14 @@ You can also optionally set the port and enable graphiql:
 Or, you can use a sql file with statements to build up an in-memory database:
 
 `tuql --infile path/to/db_dump.sql --graphiql`
+
+If you'd like to print out the schema itself, use:
+
+`tuql --db path/to/database.sqlite --schema`
+
+Or send it to a file:
+
+`tuql --db path/to/database.sqlite --schema > schema.graphql`
 
 ## How it works
 
