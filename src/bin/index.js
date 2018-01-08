@@ -83,15 +83,15 @@ if (options.help) {
   process.exit();
 }
 
-const app = express();
-
 const promise = options.infile
   ? buildSchemaFromInfile(options.infile)
   : buildSchemaFromDatabase(options.db);
 
 if (options.schema) {
-  promise.then(schema => console.log(printSchema(schema)));
+  promise.then(schema => process.stdout.write(printSchema(schema)));
 } else {
+  const app = express();
+
   const message = options.infile
     ? `Creating in-memory database with ${options.infile}`
     : `Reading schema from ${options.db}`;
