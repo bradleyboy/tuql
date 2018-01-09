@@ -36,6 +36,9 @@ export default (columns, tableName) => {
       type: transformColumnToType(column.type),
       primaryKey: column.pk === 1,
       field: column.name,
+      allowNull: column.notnull === 0 || column.dflt_value !== null,
+      defaultValue: column.dflt_value,
+      autoIncrement: column.type === 'INTEGER' && column.pk === 1,
     };
 
     return acc;
