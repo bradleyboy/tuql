@@ -1,6 +1,7 @@
 import { attributeFields } from 'graphql-sequelize';
-
+import { singular } from 'pluralize';
 import { GraphQLBoolean, GraphQLNonNull } from 'graphql';
+import camelcase from 'camelcase';
 
 export const getPkFieldKey = model => {
   return Object.keys(model.attributes).find(key => {
@@ -38,4 +39,30 @@ export const makeDeleteArgs = model => {
   const pk = getPkFieldKey(model);
 
   return { [pk]: fields[pk] };
+};
+
+export const getPolyKeys = (model, otherModel) => {
+  const key = getPkFieldKey(model);
+  const otherKey = getPkFieldKey(otherModel);
+
+  if (otherKey === key) {
+    return [
+      key,
+      otherKey,
+      camelcase(`${singular(otherModel.name)}_${otherKey}`),
+    ];
+  }
+
+  return [key, otherKey, otherKey];
+};
+
+export const makePolyArgs = (model, otherModel) => {
+  const [key, otherKey, otherKeyFormatted] = getPolyKeys(model, otherModel);
+  const fields = attributeFields(model);
+  const otherFields = attributeFields(otherModel);
+
+  return {
+    [key]: fields[key],
+    [otherKeyFormatted]: otherFields[otherKey],
+  };
 };

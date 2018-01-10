@@ -12,6 +12,7 @@ const formJoinTableAssociations = (a, b, aKey, bKey, table) => {
       options: {
         through: table,
         foreignKey: aKey,
+        timestamps: false,
       },
     },
     {
@@ -21,6 +22,7 @@ const formJoinTableAssociations = (a, b, aKey, bKey, table) => {
       options: {
         through: table,
         foreignKey: bKey,
+        timestamps: false,
       },
     },
   ];

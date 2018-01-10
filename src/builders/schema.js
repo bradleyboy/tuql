@@ -20,6 +20,7 @@ import {
   findModelKey,
   formatFieldName,
   formatTypeName,
+  pascalCase,
 } from '../utils';
 import { joinTableAssociations, tableAssociations } from './associations';
 import {
@@ -27,10 +28,12 @@ import {
   makeUpdateArgs,
   makeDeleteArgs,
   getPkFieldKey,
+  makePolyArgs,
+  getPolyKeys,
 } from './arguments';
 
-const deletedType = new GraphQLObjectType({
-  name: 'DeletedStatus',
+const GenericResponseType = new GraphQLObjectType({
+  name: 'GenericResponse',
   fields: {
     success: { type: GraphQLBoolean },
   },
@@ -202,7 +205,7 @@ const build = db => {
       };
 
       mutations[`delete${type}`] = {
-        type: deletedType,
+        type: GenericResponseType,
         args: makeDeleteArgs(model),
         resolve: async (obj, values, info) => {
           const thing = await model.findOne({
@@ -216,6 +219,37 @@ const build = db => {
           };
         },
       };
+
+      fieldAssociations.belongsToMany.forEach(sides => {
+        const [other] = sides.filter(side => side !== model.name);
+        const nameBits = [formatTypeName(model.name), formatTypeName(other)];
+
+        ['add', 'remove'].forEach(prefix => {
+          const connector = prefix === 'add' ? 'To' : 'From';
+          const name = `${prefix}${nameBits.join(connector)}`;
+          mutations[name] = {
+            type: GenericResponseType,
+            args: makePolyArgs(model, models[other]),
+            resolve: async (obj, values, info) => {
+              const key = getPkFieldKey(model);
+              const [, , otherArgumentKey] = getPolyKeys(model, models[other]);
+
+              const thingOne = await model.findById(values[key]);
+              const thingTwo = await models[other].findById(
+                values[otherArgumentKey]
+              );
+
+              const method = `${prefix}${pascalCase(singular(other))}`;
+
+              await thingOne[method](thingTwo);
+
+              return {
+                success: true,
+              };
+            },
+          };
+        });
+      });
     });
 
     const query = new GraphQLObjectType({
