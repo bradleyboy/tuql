@@ -1,5 +1,10 @@
 import fs from 'fs';
-import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLList,
+  GraphQLBoolean,
+} from 'graphql';
 import {
   resolver,
   attributeFields,
@@ -15,8 +20,24 @@ import {
   findModelKey,
   formatFieldName,
   formatTypeName,
+  pascalCase,
 } from '../utils';
 import { joinTableAssociations, tableAssociations } from './associations';
+import {
+  makeCreateArgs,
+  makeUpdateArgs,
+  makeDeleteArgs,
+  getPkFieldKey,
+  makePolyArgs,
+  getPolyKeys,
+} from './arguments';
+
+const GenericResponseType = new GraphQLObjectType({
+  name: 'GenericResponse',
+  fields: {
+    success: { type: GraphQLBoolean },
+  },
+});
 
 export const buildSchemaFromDatabase = databaseFile => {
   return new Promise(async (resolve, reject) => {
@@ -91,8 +112,10 @@ const build = db => {
     });
 
     const types = {};
+    const mutations = {};
+    const queries = {};
 
-    const fields = Object.keys(models).reduce((acc, key) => {
+    Object.keys(models).forEach(key => {
       const model = models[key];
       const fieldAssociations = {
         hasMany: associations
@@ -144,26 +167,106 @@ const build = db => {
 
       types[key] = type;
 
-      acc[formatFieldName(key)] = {
+      queries[formatFieldName(key)] = {
         type: new GraphQLList(type),
         args: defaultListArgs(model),
         resolve: resolver(model),
       };
 
-      acc[singular(formatFieldName(key))] = {
+      queries[singular(formatFieldName(key))] = {
         type,
         args: defaultArgs(model),
         resolve: resolver(model),
       };
 
-      return acc;
-    }, {});
+      mutations[`create${type}`] = {
+        type,
+        args: makeCreateArgs(model),
+        resolve: async (obj, values, info) => {
+          const thing = await model.create(values);
+          return thing;
+        },
+      };
+
+      mutations[`update${type}`] = {
+        type,
+        args: makeUpdateArgs(model),
+        resolve: async (obj, values, info) => {
+          const pkKey = getPkFieldKey(model);
+
+          const thing = await model.findOne({
+            where: { [pkKey]: values[pkKey] },
+          });
+
+          await thing.update(values);
+
+          return thing;
+        },
+      };
+
+      mutations[`delete${type}`] = {
+        type: GenericResponseType,
+        args: makeDeleteArgs(model),
+        resolve: async (obj, values, info) => {
+          const thing = await model.findOne({
+            where: values,
+          });
+
+          await thing.destroy();
+
+          return {
+            success: true,
+          };
+        },
+      };
+
+      fieldAssociations.belongsToMany.forEach(sides => {
+        const [other] = sides.filter(side => side !== model.name);
+        const nameBits = [formatTypeName(model.name), formatTypeName(other)];
+
+        ['add', 'remove'].forEach(prefix => {
+          const connector = prefix === 'add' ? 'To' : 'From';
+          const name = `${prefix}${nameBits.join(connector)}`;
+          mutations[name] = {
+            type: GenericResponseType,
+            args: makePolyArgs(model, models[other]),
+            resolve: async (obj, values, info) => {
+              const key = getPkFieldKey(model);
+              const [, , otherArgumentKey] = getPolyKeys(model, models[other]);
+
+              const thingOne = await model.findById(values[key]);
+              const thingTwo = await models[other].findById(
+                values[otherArgumentKey]
+              );
+
+              const method = `${prefix}${pascalCase(singular(other))}`;
+
+              await thingOne[method](thingTwo);
+
+              return {
+                success: true,
+              };
+            },
+          };
+        });
+      });
+    });
 
     const query = new GraphQLObjectType({
       name: 'Query',
-      fields,
+      fields: queries,
     });
 
-    resolve(new GraphQLSchema({ query }));
+    const mutation = new GraphQLObjectType({
+      name: 'Mutation',
+      fields: mutations,
+    });
+
+    resolve(
+      new GraphQLSchema({
+        query,
+        mutation,
+      })
+    );
   });
 };

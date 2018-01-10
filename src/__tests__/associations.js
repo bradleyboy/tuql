@@ -91,6 +91,7 @@ describe('join associations', () => {
         options: {
           through: 'post_user',
           foreignKey: 'post_id',
+          timestamps: false,
         },
       },
       {
@@ -100,6 +101,7 @@ describe('join associations', () => {
         options: {
           through: 'post_user',
           foreignKey: 'user_id',
+          timestamps: false,
         },
       },
     ]);
@@ -129,6 +131,7 @@ describe('join associations', () => {
         options: {
           through: 'post_user',
           foreignKey: 'post_id',
+          timestamps: false,
         },
       },
       {
@@ -138,6 +141,7 @@ describe('join associations', () => {
         options: {
           through: 'post_user',
           foreignKey: 'user_id',
+          timestamps: false,
         },
       },
     ]);

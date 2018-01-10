@@ -17,7 +17,7 @@ export const formatTypeName = name => {
   return pascalCase(singular(name));
 };
 
-const pascalCase = string => {
+export const pascalCase = string => {
   const cameled = camelcase(string);
   return cameled.substr(0, 1).toUpperCase() + cameled.substr(1);
 };
