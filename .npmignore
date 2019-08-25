@@ -1,2 +1,9 @@
 src
 .vscode
+coverage
+.babelrc
+.editorconfig
+.prettierrc
+.travis.yml
+database.sqlite
+dist/__tests__
