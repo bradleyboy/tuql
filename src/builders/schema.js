@@ -235,8 +235,8 @@ const build = db => {
               const key = getPkFieldKey(model);
               const [, , otherArgumentKey] = getPolyKeys(model, models[other]);
 
-              const thingOne = await model.findById(values[key]);
-              const thingTwo = await models[other].findById(
+              const thingOne = await model.findByPk(values[key]);
+              const thingTwo = await models[other].findByPk(
                 values[otherArgumentKey]
               );
 
