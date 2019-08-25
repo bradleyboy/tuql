@@ -48,6 +48,10 @@
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/__tests__/*"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
     ]
   }
 }
