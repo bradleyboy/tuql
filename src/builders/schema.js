@@ -62,8 +62,8 @@ export const buildSchemaFromInfile = infile => {
     const contents = fs.readFileSync(infile);
     const statements = contents
       .toString()
-      .split(/\r?\n|\r/g)
-      .filter(s => s.length);
+      .split(/;(\r?\n|\r)/g)
+      .filter(s => s.trim().length);
 
     for (let stmt of statements) {
       await db.query(stmt);
