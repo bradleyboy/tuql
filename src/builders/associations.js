@@ -83,7 +83,7 @@ export const tableAssociations = (table, info, foreignKeys) => {
         to: table,
         type: 'hasMany',
         options: {
-          foreignKey: column.name,
+          foreignKey: formatFieldName(column.name),
         },
       });
 
@@ -92,7 +92,7 @@ export const tableAssociations = (table, info, foreignKeys) => {
         to: plural(root),
         type: 'belongsTo',
         options: {
-          foreignKey: column.name,
+          foreignKey: formatFieldName(column.name),
         },
       });
     });

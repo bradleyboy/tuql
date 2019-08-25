@@ -21,7 +21,7 @@ describe('associations', () => {
         to: 'posts',
         type: 'hasMany',
         options: {
-          foreignKey: 'user_id',
+          foreignKey: 'userId',
         },
       },
       {
@@ -29,7 +29,7 @@ describe('associations', () => {
         to: 'users',
         type: 'belongsTo',
         options: {
-          foreignKey: 'user_id',
+          foreignKey: 'userId',
         },
       },
     ]);
