@@ -4,8 +4,8 @@ import { GraphQLBoolean, GraphQLNonNull } from 'graphql';
 import camelcase from 'camelcase';
 
 export const getPkFieldKey = model => {
-  return Object.keys(model.attributes).find(key => {
-    const attr = model.attributes[key];
+  return Object.keys(model.rawAttributes).find(key => {
+    const attr = model.rawAttributes[key];
     return attr.primaryKey;
   });
 };

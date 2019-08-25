@@ -45,7 +45,6 @@ export const buildSchemaFromDatabase = databaseFile => {
       dialect: 'sqlite',
       storage: databaseFile,
       logging: false,
-      operatorsAliases: Sequelize.Op,
     });
 
     resolve(await build(db));
@@ -58,7 +57,6 @@ export const buildSchemaFromInfile = infile => {
       dialect: 'sqlite',
       storage: ':memory:',
       logging: false,
-      operatorsAliases: Sequelize.Op,
     });
 
     const contents = fs.readFileSync(infile);
@@ -80,9 +78,12 @@ const build = db => {
     const models = {};
     let associations = [];
 
-    const tables = await db.query(
-      'SELECT name FROM sqlite_master WHERE type = "table" AND name NOT LIKE "sqlite_%"'
+    const rows = await db.query(
+      'SELECT name FROM sqlite_master WHERE type = "table" AND name NOT LIKE "sqlite_%"',
+      { type: Sequelize.QueryTypes.SELECT }
     );
+
+    const tables = rows.map(({ name }) => name);
 
     for (let table of tables) {
       const [info, infoMeta] = await db.query(`PRAGMA table_info("${table}")`);
