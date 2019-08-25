@@ -65,7 +65,7 @@ if (options.help) {
     {
       header: 'tuql',
       content:
-        '[underline]{tuql} turns just about any sqlite database into a graphql endpoint, including inferring associations',
+        '{underline tuql} turns just about any sqlite database into a graphql endpoint, including inferring associations',
     },
     {
       header: 'Basic usage',
@@ -76,7 +76,7 @@ if (options.help) {
       optionList: optionDefinitions,
     },
     {
-      content: 'Project home: [underline]{https://github.com/bradleyboy/tuql}',
+      content: 'Project home: {underline https://github.com/bradleyboy/tuql}',
     },
   ]);
   console.log(usage);

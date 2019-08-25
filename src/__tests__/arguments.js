@@ -14,7 +14,6 @@ const db = new Sequelize({
   dialect: 'sqlite',
   storage: ':memory:',
   logging: false,
-  operatorsAliases: Sequelize.Op,
 });
 
 const model = db.define(

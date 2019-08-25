@@ -21,29 +21,27 @@
     "sqlite"
   ],
   "dependencies": {
-    "camelcase": "^4.1.0",
-    "command-line-args": "^4.0.7",
-    "command-line-usage": "^4.0.1",
-    "cors": "^2.8.4",
-    "express": "^4.16.2",
-    "express-graphql": "^0.6.11",
-    "graphql": "^0.11.7",
-    "graphql-relay": "^0.5.3",
-    "graphql-sequelize": "^5.6.0",
-    "pluralize": "^7.0.0",
-    "sequelize": "^4.22.7",
-    "sqlite3": "^3.1.13"
+    "camelcase": "^5.3.1",
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^6.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.5.3",
+    "graphql-relay": "^0.6.0",
+    "graphql-sequelize": "^9.3.6",
+    "pluralize": "^8.0.0",
+    "sequelize": "^5.16.0",
+    "sqlite3": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.32",
-    "@babel/core": "^7.0.0-beta.32",
-    "@babel/node": "^7.0.0-beta.32",
-    "@babel/preset-env": "^7.0.0-beta.32",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^21.2.0",
-    "coveralls": "^3.0.0",
-    "jest": "^21.2.1",
-    "regenerator-runtime": "^0.11.0"
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/node": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-jest": "^24.9.0",
+    "coveralls": "^3.0.6",
+    "jest": "^24.9.0"
   },
   "jest": {
     "collectCoverage": true,
