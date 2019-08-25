@@ -6,4 +6,5 @@ coverage
 .prettierrc
 .travis.yml
 database.sqlite
+infile.sql
 dist/__tests__

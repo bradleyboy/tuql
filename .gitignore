@@ -3,3 +3,4 @@ database.sqlite
 test.sql
 dist
 coverage
+infile.sql
