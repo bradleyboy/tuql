@@ -1,6 +1,6 @@
 import { attributeFields } from 'graphql-sequelize';
 import { singular } from 'pluralize';
-import { GraphQLBoolean, GraphQLNonNull } from 'graphql';
+import { GraphQLNonNull } from 'graphql';
 import camelcase from 'camelcase';
 
 export const getPkFieldKey = model => {

@@ -11,7 +11,7 @@ import {
   defaultListArgs,
   defaultArgs,
 } from 'graphql-sequelize';
-import { plural, singular } from 'pluralize';
+import { singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
@@ -80,13 +80,13 @@ const build = db => {
 
     const rows = await db.query(
       'SELECT name FROM sqlite_master WHERE type = "table" AND name NOT LIKE "sqlite_%"',
-      { type: Sequelize.QueryTypes.SELECT }
+      { type: QueryTypes.SELECT }
     );
 
     const tables = rows.map(({ name }) => name);
 
     for (let table of tables) {
-      const [info, infoMeta] = await db.query(`PRAGMA table_info("${table}")`);
+      const [info] = await db.query(`PRAGMA table_info("${table}")`);
       const foreignKeys = await db.query(`PRAGMA foreign_key_list("${table}")`);
 
       if (isJoinTable(table, tables)) {
