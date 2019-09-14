@@ -20,6 +20,10 @@ jobs:
     - name: npm install, build, and test
       run: |
         npm install
-        npm run test:ci
+        npm run test
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
       env:
         CI: true
