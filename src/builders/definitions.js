@@ -40,7 +40,7 @@ export default columns => {
       field: column.name,
       allowNull: column.notnull === 0 || column.dflt_value !== null,
       defaultValue: column.dflt_value,
-      autoIncrement: column.type === 'INTEGER' && column.pk === 1,
+      autoIncrement: column.type === 'integer' && column.pk === 1,
     };
 
     return acc;
