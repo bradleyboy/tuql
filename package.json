@@ -10,6 +10,7 @@
     "start": "babel-node src/index.js",
     "build": "babel src --out-dir dist",
     "prepublish": "npm run build",
+    "prepare": "npm run build",
     "test": "jest",
     "test:watch": "jest --watch"
   },
