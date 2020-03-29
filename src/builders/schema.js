@@ -191,6 +191,27 @@ const build = (db, resolvers = {}) => {
         },
       };
 
+      mutations[`create${plural(type.name)}`] = {
+        type: new GraphQLList(type),
+        args: {
+          input: {
+            name: 'input',
+            type: new GraphQLList(
+              new GraphQLNonNull(
+                new GraphQLInputObjectType({
+                  name: `${type}CreateInput`,
+                  fields: makeCreateArgs(model),
+                })
+              )
+            ),
+          },
+        },
+        resolve: async (obj, values, info) => {
+          const things = await model.bulkCreate(values.input);
+          return things;
+        },
+      };
+
       mutations[`update${type}`] = {
         type,
         args: makeUpdateArgs(model),
@@ -216,6 +237,18 @@ const build = (db, resolvers = {}) => {
           });
 
           await thing.destroy();
+
+          return {
+            success: true,
+          };
+        },
+      };
+
+      mutations[`delete${plural(type.name)}`] = {
+        type: GenericResponseType,
+        args: { where: defaultListArgs().where },
+        resolve: async (obj, values, info) => {
+          await model.destroy({ where: values.where });
 
           return {
             success: true,
