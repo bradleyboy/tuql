@@ -4,6 +4,8 @@ import {
   GraphQLObjectType,
   GraphQLList,
   GraphQLBoolean,
+  GraphQLInputObjectType,
+  GraphQLNonNull,
 } from 'graphql';
 import {
   resolver,
@@ -11,7 +13,7 @@ import {
   defaultListArgs,
   defaultArgs,
 } from 'graphql-sequelize';
-import { singular } from 'pluralize';
+import { plural, singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
@@ -39,7 +41,7 @@ const GenericResponseType = new GraphQLObjectType({
   },
 });
 
-export const buildSchemaFromDatabase = databaseFile => {
+export const buildSchemaFromDatabase = (databaseFile, resolvers) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -47,11 +49,11 @@ export const buildSchemaFromDatabase = databaseFile => {
       logging: false,
     });
 
-    resolve(await build(db));
+    resolve(await build(db, resolvers));
   });
 };
 
-export const buildSchemaFromInfile = infile => {
+export const buildSchemaFromInfile = (infile, resolvers) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -69,11 +71,11 @@ export const buildSchemaFromInfile = infile => {
       await db.query(stmt);
     }
 
-    resolve(await build(db));
+    resolve(await build(db, resolvers));
   });
 };
 
-const build = db => {
+const build = (db, resolvers = {}) => {
   return new Promise(async (resolve, reject) => {
     const models = {};
     let associations = [];
@@ -252,6 +254,22 @@ const build = db => {
         });
       });
     });
+
+    // Applying custom resolvers
+    if (resolvers.Query) {
+      for (const [name, spec] of Object.entries(queries)) {
+        if (resolvers.Query[name]) {
+          spec.resolve = resolvers.Query[name](spec.resolve);
+        }
+      }
+    }
+    if (resolvers.Mutation) {
+      for (const [name, spec] of Object.entries(mutations)) {
+        if (resolvers.Mutation[name]) {
+          spec.resolve = resolvers.Mutation[name](spec.resolve);
+        }
+      }
+    }
 
     const query = new GraphQLObjectType({
       name: 'Query',
