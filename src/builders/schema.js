@@ -41,7 +41,7 @@ const GenericResponseType = new GraphQLObjectType({
   },
 });
 
-export const buildSchemaFromDatabase = (databaseFile, resolvers) => {
+export const buildSchemaFromDatabase = (databaseFile, customSchema) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -49,11 +49,11 @@ export const buildSchemaFromDatabase = (databaseFile, resolvers) => {
       logging: false,
     });
 
-    resolve(await build(db, resolvers));
+    resolve(await build(db, customSchema));
   });
 };
 
-export const buildSchemaFromInfile = (infile, resolvers) => {
+export const buildSchemaFromInfile = (infile, customSchema) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -71,11 +71,11 @@ export const buildSchemaFromInfile = (infile, resolvers) => {
       await db.query(stmt);
     }
 
-    resolve(await build(db, resolvers));
+    resolve(await build(db, customSchema));
   });
 };
 
-const build = (db, resolvers = {}) => {
+const build = (db, customSchema = {}) => {
   return new Promise(async (resolve, reject) => {
     const models = {};
     let associations = [];
@@ -288,21 +288,21 @@ const build = (db, resolvers = {}) => {
       });
     });
 
-    // Applying custom resolvers
-    if (resolvers.Query) {
-      for (const [name, spec] of Object.entries(queries)) {
-        if (resolvers.Query[name]) {
-          spec.resolve = resolvers.Query[name](spec.resolve);
+    // Applying custom schema overrides and new mutations/queries
+    const applyOverrides = (from, to) => {
+      if (from) {
+        for (const [name, fn] of Object.entries(from)) {
+          // If exists, replace resolver
+          if (to[name]) {
+            to[name].resolve = fn(to[name].resolve);
+          } else {
+            to[name] = fn;
+          }
         }
       }
-    }
-    if (resolvers.Mutation) {
-      for (const [name, spec] of Object.entries(mutations)) {
-        if (resolvers.Mutation[name]) {
-          spec.resolve = resolvers.Mutation[name](spec.resolve);
-        }
-      }
-    }
+    };
+    applyOverrides(customSchema.Query, queries);
+    applyOverrides(customSchema.Mutation, mutations);
 
     const query = new GraphQLObjectType({
       name: 'Query',
