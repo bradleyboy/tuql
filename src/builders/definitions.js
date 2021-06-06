@@ -1,4 +1,4 @@
-import { TEXT, INTEGER, REAL, NUMERIC, BLOB } from 'sequelize';
+import { TEXT, INTEGER, REAL, NUMERIC, BLOB, BOOLEAN } from 'sequelize';
 import { formatFieldName } from '../utils';
 
 const transformColumnToType = column => {
@@ -19,11 +19,14 @@ const transformColumnToType = column => {
   if (
     c.includes('decimal') ||
     c.includes('numeric') ||
-    c === 'boolean' ||
     c === 'date' ||
     c === 'datetime'
   ) {
     return NUMERIC;
+  }
+
+  if (c === 'boolean') {
+    return BOOLEAN;
   }
 
   return BLOB;
@@ -37,7 +40,7 @@ export default columns => {
       field: column.name,
       allowNull: column.notnull === 0 || column.dflt_value !== null,
       defaultValue: column.dflt_value,
-      autoIncrement: column.type === 'INTEGER' && column.pk === 1,
+      autoIncrement: column.type === 'integer' && column.pk === 1,
     };
 
     return acc;

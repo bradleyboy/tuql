@@ -4,6 +4,8 @@ import {
   GraphQLObjectType,
   GraphQLList,
   GraphQLBoolean,
+  GraphQLInputObjectType,
+  GraphQLNonNull,
 } from 'graphql';
 import {
   resolver,
@@ -11,7 +13,7 @@ import {
   defaultListArgs,
   defaultArgs,
 } from 'graphql-sequelize';
-import { singular } from 'pluralize';
+import { plural, singular } from 'pluralize';
 import Sequelize, { QueryTypes } from 'sequelize';
 
 import createDefinitions from './definitions';
@@ -39,7 +41,7 @@ const GenericResponseType = new GraphQLObjectType({
   },
 });
 
-export const buildSchemaFromDatabase = databaseFile => {
+export const buildSchemaFromDatabase = (databaseFile, customSchema) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -47,11 +49,11 @@ export const buildSchemaFromDatabase = databaseFile => {
       logging: false,
     });
 
-    resolve(await build(db));
+    resolve(await build(db, customSchema));
   });
 };
 
-export const buildSchemaFromInfile = infile => {
+export const buildSchemaFromInfile = (infile, customSchema) => {
   return new Promise(async (resolve, reject) => {
     const db = new Sequelize({
       dialect: 'sqlite',
@@ -69,11 +71,11 @@ export const buildSchemaFromInfile = infile => {
       await db.query(stmt);
     }
 
-    resolve(await build(db));
+    resolve(await build(db, customSchema));
   });
 };
 
-const build = db => {
+const build = (db, customSchema = {}) => {
   return new Promise(async (resolve, reject) => {
     const models = {};
     let associations = [];
@@ -195,6 +197,27 @@ const build = db => {
         },
       };
 
+      mutations[`create${plural(type.name)}`] = {
+        type: new GraphQLList(type),
+        args: {
+          input: {
+            name: 'input',
+            type: new GraphQLList(
+              new GraphQLNonNull(
+                new GraphQLInputObjectType({
+                  name: `${type}CreateInput`,
+                  fields: makeCreateArgs(model),
+                })
+              )
+            ),
+          },
+        },
+        resolve: async (obj, values, info) => {
+          const things = await model.bulkCreate(values.input);
+          return things;
+        },
+      };
+
       mutations[`update${type}`] = {
         type,
         args: makeUpdateArgs(model),
@@ -220,6 +243,18 @@ const build = db => {
           });
 
           await thing.destroy();
+
+          return {
+            success: true,
+          };
+        },
+      };
+
+      mutations[`delete${plural(type.name)}`] = {
+        type: GenericResponseType,
+        args: { where: defaultListArgs().where },
+        resolve: async (obj, values, info) => {
+          await model.destroy({ where: values.where });
 
           return {
             success: true,
@@ -258,6 +293,22 @@ const build = db => {
         });
       });
     });
+
+    // Applying custom schema overrides and new mutations/queries
+    const applyOverrides = (from, to) => {
+      if (from) {
+        for (const [name, fn] of Object.entries(from)) {
+          // If exists, replace resolver
+          if (to[name]) {
+            to[name].resolve = fn(to[name].resolve);
+          } else {
+            to[name] = fn;
+          }
+        }
+      }
+    };
+    applyOverrides(customSchema.Query, queries);
+    applyOverrides(customSchema.Mutation, mutations);
 
     const query = new GraphQLObjectType({
       name: 'Query',
