@@ -184,7 +184,13 @@ const build = db => {
         type,
         args: makeCreateArgs(model),
         resolve: async (obj, values, info) => {
-          const thing = await model.create(values);
+          const options = {
+            // By default sequelize will insert all columns which can cause a
+            // bug where default values, that use functions, defined at the
+            // database layer don't get populated correctly.
+            fields: Object.keys(values),
+          };
+          const thing = await model.create(values, options);
           return thing;
         },
       };
