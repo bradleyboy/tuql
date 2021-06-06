@@ -1,4 +1,4 @@
-# tuql ![build status](https://github.com/bradleyboy/tuql/workflows/Node%20CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/bradleyboy/tuql/badge.svg?branch=master)](https://coveralls.io/github/bradleyboy/tuql?branch=master)
+# tuql ![build status](https://github.com/bradleyboy/tuql/actions/workflows/nodejs.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/bradleyboy/tuql/badge.svg?branch=master)](https://coveralls.io/github/bradleyboy/tuql?branch=master)
 
 _Pronounced: Too cool_
 
